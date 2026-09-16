@@ -23,21 +23,33 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
 
   useEffect(() => {
     let cancelled = false;
-    const images: HTMLImageElement[] = [];
+    const images: HTMLImageElement[] = new Array(FRAME_COUNT);
     let loaded = 0;
+    let failed = 0;
 
     for (let i = 1; i <= FRAME_COUNT; i++) {
       const img = new Image();
       img.decoding = "async";
-      img.src = `${FRAME_PATH}${String(i).padStart(3, "0")}.webp`;
+      img.src = `${FRAME_PATH}${String(i).padStart(3, "0")}.jpg`;
       img.onload = () => {
         loaded += 1;
-        if (!cancelled && loaded === FRAME_COUNT) {
+        if (!cancelled && loaded + failed === FRAME_COUNT) {
           imagesRef.current = images;
-          setReady(true);
+          setReady(loaded === FRAME_COUNT);
+          if (loaded !== FRAME_COUNT) {
+            console.warn(`Animação solar: ${loaded}/${FRAME_COUNT} frames carregados. ${failed} frame(s) ausente(s).`);
+          }
         }
       };
-      images.push(img);
+      img.onerror = () => {
+        failed += 1;
+        if (!cancelled && loaded + failed === FRAME_COUNT) {
+          imagesRef.current = images;
+          setReady(loaded === FRAME_COUNT);
+          console.warn(`Animação solar: ${loaded}/${FRAME_COUNT} frames carregados. ${failed} frame(s) ausente(s).`);
+        }
+      };
+      images[i - 1] = img;
     }
 
     return () => { cancelled = true; };
