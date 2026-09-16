@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 type SolarScrollAnimationProps = { className?: string };
 
-const FRAME_COUNT = 30;
+const FRAME_COUNT = 80;
 const FRAME_PATH = "/frame_";
 
 const STORY = [
