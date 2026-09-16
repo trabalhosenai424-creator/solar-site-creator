@@ -6,12 +6,12 @@ const FRAME_COUNT = 30;
 const FRAME_PATH = "/frame_";
 
 const STORY = [
-  { start: 0, end: 0.16, eyebrow: "01 · A origem", title: "Tudo começa com uma fonte.", body: "A luz do sol inicia uma jornada que transforma radiação em energia utilizável." },
-  { start: 0.16, end: 0.33, eyebrow: "02 · Captação", title: "A luz encontra os painéis.", body: "A luz incide sobre os módulos fotovoltaicos e inicia a geração." },
-  { start: 0.33, end: 0.52, eyebrow: "03 · Geração", title: "Energia sendo gerada em tempo real.", body: "O fluxo elétrico cresce conforme a energia solar é capturada." },
-  { start: 0.52, end: 0.69, eyebrow: "04 · Conversão", title: "Energia solar → energia utilizável.", body: "O inversor transforma a energia produzida em eletricidade pronta para uso." },
-  { start: 0.69, end: 0.86, eyebrow: "05 · Uso", title: "A energia chega onde importa.", body: "A eletricidade gerada passa a alimentar a casa e seus equipamentos." },
-  { start: 0.86, end: 1, eyebrow: "06 · Resultado", title: "Sua energia. Seu controle.", body: "Acompanhe geração, consumo e economia com clareza." },
+  { start: 0, end: 0.14, eyebrow: "01 · A origem", title: "Tudo começa com uma fonte.", body: "A luz do sol inicia uma jornada que transforma radiação em energia utilizável." },
+  { start: 0.14, end: 0.31, eyebrow: "02 · Captação", title: "A luz encontra os painéis.", body: "A luz incide sobre os módulos fotovoltaicos e inicia a geração." },
+  { start: 0.31, end: 0.51, eyebrow: "03 · Geração", title: "Energia sendo gerada em tempo real.", body: "O fluxo elétrico cresce conforme a energia solar é capturada." },
+  { start: 0.51, end: 0.68, eyebrow: "04 · Conversão", title: "Energia solar → energia utilizável.", body: "O inversor transforma a energia produzida em eletricidade pronta para uso." },
+  { start: 0.68, end: 0.84, eyebrow: "05 · Uso", title: "A energia chega onde importa.", body: "A eletricidade gerada passa a alimentar a casa e seus equipamentos." },
+  { start: 0.84, end: 1, eyebrow: "06 · Resultado", title: "Sua energia. Seu controle.", body: "Acompanhe geração, consumo e economia com clareza." },
 ];
 
 export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationProps) {
@@ -40,9 +40,7 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
       images.push(img);
     }
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -50,7 +48,6 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
     const section = sectionRef.current;
     const canvas = canvasRef.current;
     if (!section || !canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -70,9 +67,8 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
         const scale = Math.max(rect.width / image.naturalWidth, rect.height / image.naturalHeight);
         const w = image.naturalWidth * scale;
         const h = image.naturalHeight * scale;
-
         ctx.clearRect(0, 0, rect.width, rect.height);
-        ctx.fillStyle = "#050b12";
+        ctx.fillStyle = "#03070b";
         ctx.fillRect(0, 0, rect.width, rect.height);
         ctx.drawImage(image, (rect.width - w) / 2, (rect.height - h) / 2, w, h);
       }
@@ -100,7 +96,6 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
     resize();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", resize);
-
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("scroll", onScroll);
@@ -110,63 +105,42 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
 
   const story = STORY.find((item) => progress >= item.start && progress <= item.end) ?? STORY[5];
   const storyIndex = STORY.indexOf(story);
-  const production = Math.min(5.2, Math.max(0, ((progress - 0.33) / 0.36) * 5.2));
-  const savings = Math.round(Math.min(847, Math.max(0, ((progress - 0.69) / 0.31) * 847)));
+  const production = Math.min(5.2, Math.max(0, ((progress - 0.31) / 0.37) * 5.2));
+  const savings = Math.round(Math.min(847, Math.max(0, ((progress - 0.68) / 0.32) * 847)));
 
   return (
-    <section
-      ref={sectionRef}
-      className={`relative h-[420vh] w-full ${className}`}
-      aria-label="Jornada cinematográfica da energia solar"
-    >
-      <div className="sticky top-0 h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#050b12]">
-        <canvas
-          ref={canvasRef}
-          className="absolute inset-0 block h-full w-full"
-          aria-label="Animação da jornada da energia solar"
-        />
-
+    <section ref={sectionRef} className={`relative h-[520vh] w-full ${className}`} aria-label="Jornada cinematográfica da energia solar">
+      <div className="sticky top-0 h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#03070b]">
+        <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" aria-label="Animação da jornada da energia solar" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.28)_100%)]" />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/70" />
 
         <div className="pointer-events-none absolute inset-0 flex items-center">
           <div className="mx-auto w-full max-w-7xl px-6 pt-12 md:px-12 lg:px-16">
             <div key={storyIndex} className="max-w-2xl animate-in fade-in slide-in-from-bottom-3 duration-700">
-              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.38em] text-cyan-200/90 md:text-xs">
-                {story.eyebrow}
-              </p>
-              <h2 className="max-w-2xl text-4xl font-semibold leading-[0.96] tracking-[-0.035em] text-white drop-shadow-[0_8px_30px_rgba(0,0,0,0.65)] md:text-6xl lg:text-7xl">
-                {story.title}
-              </h2>
-              <p className="mt-6 max-w-lg text-sm leading-6 text-white/70 drop-shadow-lg md:text-base md:leading-7">
-                {story.body}
-              </p>
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.38em] text-cyan-200/90 md:text-xs">{story.eyebrow}</p>
+              <h2 className="max-w-2xl text-4xl font-semibold leading-[0.96] tracking-[-0.035em] text-white drop-shadow-[0_8px_30px_rgba(0,0,0,0.65)] md:text-6xl lg:text-7xl">{story.title}</h2>
+              <p className="mt-6 max-w-lg text-sm leading-6 text-white/70 drop-shadow-lg md:text-base md:leading-7">{story.body}</p>
             </div>
           </div>
         </div>
 
         <div className="pointer-events-none absolute right-5 top-20 rounded-2xl border border-white/15 bg-black/25 px-4 py-3 backdrop-blur-xl md:right-10 md:top-24">
           <p className="text-[9px] uppercase tracking-[0.25em] text-white/45">Jornada solar</p>
-          <p className="mt-1 text-sm font-medium text-white tabular-nums">
-            {String(storyIndex + 1).padStart(2, "0")} / 06
-          </p>
+          <p className="mt-1 text-sm font-medium text-white tabular-nums">{String(storyIndex + 1).padStart(2, "0")} / 06</p>
         </div>
 
-        {progress >= 0.33 && progress < 0.69 && (
+        {progress >= 0.31 && progress < 0.68 && (
           <div className="pointer-events-none absolute bottom-20 right-5 rounded-2xl border border-white/15 bg-black/25 px-5 py-4 text-right backdrop-blur-xl md:bottom-12 md:right-10">
             <p className="text-[9px] uppercase tracking-[0.25em] text-white/45">Potência gerada</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums text-white md:text-3xl">
-              {production.toFixed(1)} <span className="text-sm text-cyan-200">kW</span>
-            </p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-white md:text-3xl">{production.toFixed(1)} <span className="text-sm text-cyan-200">kW</span></p>
           </div>
         )}
 
-        {progress >= 0.69 && (
+        {progress >= 0.68 && (
           <div className="pointer-events-none absolute bottom-20 right-5 rounded-2xl border border-white/15 bg-black/25 px-5 py-4 text-right backdrop-blur-xl md:bottom-12 md:right-10">
             <p className="text-[9px] uppercase tracking-[0.25em] text-white/45">Economia acumulada</p>
-            <p className="mt-1 text-2xl font-semibold tabular-nums text-white md:text-3xl">
-              R$ {savings.toLocaleString("pt-BR")}
-            </p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums text-white md:text-3xl">R$ {savings.toLocaleString("pt-BR")}</p>
           </div>
         )}
 
