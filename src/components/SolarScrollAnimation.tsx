@@ -13,11 +13,149 @@ const STORY = [
 ];
 
 export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationProps) {
-  const sectionRef = useRef<HTMLElement>(null); const canvasRef = useRef<HTMLCanvasElement>(null); const imagesRef = useRef<HTMLImageElement[]>([]); const [ready, setReady] = useState(false); const [progress, setProgress] = useState(0);
-  useEffect(() => { let cancelled = false; const images: HTMLImageElement[] = new Array(FRAME_COUNT); let loaded = 0; let failed = 0; for (let i = 1; i <= FRAME_COUNT; i++) { const img = new Image(); img.decoding = "async"; img.src = `${FRAME_PATH}${String(i).padStart(3, "0")}.jpg`; img.onload = () => { loaded += 1; if (!cancelled && loaded + failed === FRAME_COUNT) { imagesRef.current = images; setReady(loaded === FRAME_COUNT); } }; img.onerror = () => { failed += 1; if (!cancelled && loaded + failed === FRAME_COUNT) { imagesRef.current = images; setReady(loaded === FRAME_COUNT); } }; images[i - 1] = img; } return () => { cancelled = true; }; }, []);
-  useEffect(() => { if (!ready) return; const section = sectionRef.current; const canvas = canvasRef.current; if (!section || !canvas) return; const ctx = canvas.getContext("2d"); if (!ctx) return; let raf = 0; let targetProgress = 0; let smoothProgress = 0; let lastRenderedFrame = -1; let lastReportedProgress = -1;
-    const render = () => { const bounds = section.getBoundingClientRect(); const distance = Math.max(1, bounds.height - window.innerHeight); targetProgress = Math.max(0, Math.min(1, -bounds.top / distance)); smoothProgress += (targetProgress - smoothProgress) * 0.045; if (Math.abs(targetProgress - smoothProgress) < 0.00035) smoothProgress = targetProgress; const rect = canvas.getBoundingClientRect(); let frameIndex: number; if (smoothProgress <= 0.1875) { frameIndex = Math.min(39, Math.floor((smoothProgress / 0.1875) * 40)); } else if (smoothProgress <= 0.375) { frameIndex = Math.max(0, 39 - Math.floor(((smoothProgress - 0.1875) / 0.1875) * 40)); } else { frameIndex = Math.min(79, 40 + Math.floor(((smoothProgress - 0.375) / 0.625) * 40)); } const image = imagesRef.current[frameIndex]; if (image?.naturalWidth && rect.width && rect.height && frameIndex !== lastRenderedFrame) { const scale = Math.max(rect.width / image.naturalWidth, rect.height / image.naturalHeight); const w = image.naturalWidth * scale; const h = image.naturalHeight * scale; ctx.clearRect(0, 0, rect.width, rect.height); ctx.fillStyle = "#03070b"; ctx.fillRect(0, 0, rect.width, rect.height); ctx.drawImage(image, (rect.width - w) / 2, (rect.height - h) / 2, w, h); lastRenderedFrame = frameIndex; } if (Math.abs(lastReportedProgress - smoothProgress) > 0.004) { lastReportedProgress = smoothProgress; setProgress(smoothProgress); } if (Math.abs(targetProgress - smoothProgress) > 0.00035) raf = requestAnimationFrame(render); };
-    const resize = () => { const rect = canvas.getBoundingClientRect(); const dpr = Math.min(window.devicePixelRatio || 1, 2); canvas.width = Math.max(1, Math.round(rect.width * dpr)); canvas.height = Math.max(1, Math.round(rect.height * dpr)); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); lastRenderedFrame = -1; cancelAnimationFrame(raf); raf = requestAnimationFrame(render); }; const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); }; resize(); window.addEventListener("scroll", onScroll, { passive: true }); window.addEventListener("resize", resize); return () => { cancelAnimationFrame(raf); window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", resize); }; }, [ready]);
-  const story = STORY.find((item) => progress >= item.start && progress <= item.end) ?? STORY[5]; const storyIndex = STORY.indexOf(story); const production = Math.min(5.2, Math.max(0, ((progress - 0.31) / 0.37) * 5.2)); const savings = Math.round(Math.min(847, Math.max(0, ((progress - 0.68) / 0.32) * 847)));
-  return <section ref={sectionRef} className={`relative h-[1200vh] w-full ${className}`} aria-label="Jornada cinematográfica da energia solar"><div className="sticky top-0 h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#03070b]"><canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" aria-label="Animação da jornada da energia solar" /><div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.28)_100%)]" /><div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/70" /><div className="pointer-events-none absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-7xl px-6 pt-12 md:px-12 lg:px-16"><div key={storyIndex} className="max-w-2xl animate-in fade-in slide-in-from-bottom-3 duration-700"><p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.38em] text-[#f1d39a]/85 md:text-xs">{story.eyebrow}</p><h2 className="max-w-2xl text-4xl font-semibold leading-[0.96] tracking-[-0.035em] text-white drop-shadow-[0_8px_30px_rgba(0,0,0,0.65)] md:text-6xl lg:text-7xl">{story.title}</h2><p className="mt-6 max-w-lg text-sm leading-6 text-white/70 drop-shadow-lg md:text-base md:leading-7">{story.body}</p></div></div></div>{progress >= 0.31 && progress < 0.68 && <div className="pointer-events-none absolute bottom-20 right-5 rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-right backdrop-blur-xl md:bottom-12 md:right-10"><p className="text-[9px] uppercase tracking-[0.25em] text-white/45">Potência gerada</p><p className="mt-1 text-2xl font-semibold tabular-nums text-white md:text-3xl">{production.toFixed(1)} <span className="text-sm text-[#f1d39a]">kW</span></p></div>}{progress >= 0.68 && <div className="pointer-events-none absolute bottom-20 right-5 rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-right backdrop-blur-xl md:bottom-12 md:right-10"><p className="text-[9px] uppercase tracking-[0.25em] text-white/45">Economia acumulada</p><p className="mt-1 text-2xl font-semibold tabular-nums text-white md:text-3xl">R$ {savings.toLocaleString("pt-BR")}</p></div>}<div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center md:bottom-8"><div className="flex items-center gap-3 rounded-full border border-white/10 bg-black/20 px-4 py-2.5 text-[9px] font-semibold uppercase tracking-[0.28em] text-white/50 backdrop-blur-xl"><span className="h-1 w-1 animate-pulse rounded-full bg-[#d6b06a]" />Role para continuar</div></div></div></section>;
+  const sectionRef = useRef<HTMLElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const imagesRef = useRef<HTMLImageElement[]>([]);
+  const [ready, setReady] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const images: HTMLImageElement[] = new Array(FRAME_COUNT);
+    let loaded = 0;
+    let failed = 0;
+
+    for (let i = 1; i <= FRAME_COUNT; i++) {
+      const img = new Image();
+      img.decoding = "async";
+      img.src = `${FRAME_PATH}${String(i).padStart(3, "0")}.jpg`;
+      img.onload = async () => {
+        loaded += 1;
+        try { await img.decode(); } catch { /* already decoded enough to render */ }
+        if (!cancelled && loaded + failed === FRAME_COUNT) {
+          imagesRef.current = images;
+          setReady(loaded === FRAME_COUNT);
+        }
+      };
+      img.onerror = () => {
+        failed += 1;
+        if (!cancelled && loaded + failed === FRAME_COUNT) {
+          imagesRef.current = images;
+          setReady(false);
+        }
+      };
+      images[i - 1] = img;
+    }
+
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    const section = sectionRef.current;
+    const canvas = canvasRef.current;
+    if (!section || !canvas) return;
+    const ctx = canvas.getContext("2d", { alpha: false });
+    if (!ctx) return;
+
+    let raf = 0;
+    let targetProgress = 0;
+    let smoothProgress = 0;
+    let lastRenderedFrame = -1;
+    let lastReportedProgress = -1;
+    let sectionTop = 0;
+    let distance = 1;
+
+    const measure = () => {
+      sectionTop = section.getBoundingClientRect().top + window.scrollY;
+      distance = Math.max(1, section.offsetHeight - window.innerHeight);
+    };
+
+    const render = () => {
+      const scrollProgress = Math.max(0, Math.min(1, (window.scrollY - sectionTop) / distance));
+      targetProgress = scrollProgress;
+
+      // Smoother than the old 0.045 value, so the animation stays fluid
+      // without visibly falling behind the user's scroll.
+      smoothProgress += (targetProgress - smoothProgress) * 0.085;
+      if (Math.abs(targetProgress - smoothProgress) < 0.00025) smoothProgress = targetProgress;
+
+      let frameIndex: number;
+      if (smoothProgress <= 0.1875) {
+        frameIndex = Math.min(39, Math.floor((smoothProgress / 0.1875) * 40));
+      } else if (smoothProgress <= 0.375) {
+        frameIndex = Math.max(0, 39 - Math.floor(((smoothProgress - 0.1875) / 0.1875) * 40));
+      } else {
+        // The 41→80 continuation keeps the larger 62.5% scroll area,
+        // but responds faster internally so it does not look like lag.
+        frameIndex = Math.min(79, 40 + Math.floor(((smoothProgress - 0.375) / 0.625) * 40));
+      }
+
+      const image = imagesRef.current[frameIndex];
+      const rect = canvas.getBoundingClientRect();
+      if (image?.naturalWidth && rect.width && rect.height && frameIndex !== lastRenderedFrame) {
+        const scale = Math.max(rect.width / image.naturalWidth, rect.height / image.naturalHeight);
+        const w = image.naturalWidth * scale;
+        const h = image.naturalHeight * scale;
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        ctx.drawImage(image, (rect.width - w) / 2, (rect.height - h) / 2, w, h);
+        lastRenderedFrame = frameIndex;
+      }
+
+      if (Math.abs(lastReportedProgress - smoothProgress) > 0.012) {
+        lastReportedProgress = smoothProgress;
+        setProgress(smoothProgress);
+      }
+
+      if (Math.abs(targetProgress - smoothProgress) > 0.00025) {
+        raf = requestAnimationFrame(render);
+      } else {
+        raf = 0;
+      }
+    };
+
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.max(1, Math.round(rect.width * dpr));
+      canvas.height = Math.max(1, Math.round(rect.height * dpr));
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      measure();
+      lastRenderedFrame = -1;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(render);
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(render);
+    };
+
+    measure();
+    resize();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", resize);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", resize);
+    };
+  }, [ready]);
+
+  const story = STORY.find((item) => progress >= item.start && progress <= item.end) ?? STORY[5];
+  const storyIndex = STORY.indexOf(story);
+  const production = Math.min(5.2, Math.max(0, ((progress - 0.31) / 0.37) * 5.2));
+  const savings = Math.round(Math.min(847, Math.max(0, ((progress - 0.68) / 0.32) * 847)));
+
+  return <section ref={sectionRef} className={`relative h-[1200vh] w-full ${className}`} aria-label="Jornada cinematográfica da energia solar">
+    <div className="sticky top-0 h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#03070b]">
+      <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" aria-label="Animação da jornada da energia solar" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.28)_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/70" />
+      <div className="pointer-events-none absolute inset-0 flex items-center"><div className="mx-auto w-full max-w-7xl px-6 pt-12 md:px-12 lg:px-16"><div key={storyIndex} className="max-w-2xl animate-in fade-in slide-in-from-bottom-3 duration-700"><p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.38em] text-[#f1d39a]/85 md:text-xs">{story.eyebrow}</p><h2 className="max-w-2xl text-4xl font-semibold leading-[0.96] tracking-[-0.035em] text-white drop-shadow-[0_8px_30px_rgba(0,0,0,0.65)] md:text-6xl lg:text-7xl">{story.title}</h2><p className="mt-6 max-w-lg text-sm leading-6 text-white/70 drop-shadow-lg md:text-base md:leading-7">{story.body}</p></div></div></div>
+      {progress >= 0.31 && progress < 0.68 && <div className="pointer-events-none absolute bottom-20 right-5 rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-right backdrop-blur-xl md:bottom-12 md:right-10"><p className="text-[9px] uppercase tracking-[0.25em] text-white/45">Potência gerada</p><p className="mt-1 text-2xl font-semibold tabular-nums text-white md:text-3xl">{production.toFixed(1)} <span className="text-sm text-[#f1d39a]">kW</span></p></div>}
+      {progress >= 0.68 && <div className="pointer-events-none absolute bottom-20 right-5 rounded-2xl border border-white/10 bg-black/25 px-5 py-4 text-right backdrop-blur-xl md:bottom-12 md:right-10"><p className="text-[9px] uppercase tracking-[0.25em] text-white/45">Economia acumulada</p><p className="mt-1 text-2xl font-semibold tabular-nums text-white md:text-3xl">R$ {savings.toLocaleString("pt-BR")}</p></div>}
+      <div className="pointer-events-none absolute inset-x-0 bottom-6 flex justify-center md:bottom-8"><div className="flex items-center gap-3 rounded-full border border-white/10 bg-black/20 px-4 py-2.5 text-[9px] font-semibold uppercase tracking-[0.28em] text-white/50 backdrop-blur-xl"><span className="h-1 w-1 animate-pulse rounded-full bg-[#d6b06a]" />Role para continuar</div></div>
+    </div>
+  </section>;
 }
