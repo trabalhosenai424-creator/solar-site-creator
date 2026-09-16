@@ -117,3 +117,7 @@
     font-family: var(--font-display);
   }
 }
+
+#lovable-badge {
+  display: none !important;
+}
