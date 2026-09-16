@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { Sun, PiggyBank, Leaf, TrendingUp, ClipboardCheck, Phone, Mail, MapPin, CheckCircle2 } from "lucide-react";
 
 import { SolarScrollAnimation } from "@/components/SolarScrollAnimation";
-import { SolarHowItWorks } from "@/components/SolarHowItWorks";
+import { SolarHowItWorksPremium } from "@/components/SolarHowItWorksPremium";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,32 +22,11 @@ export const Route = createFileRoute("/")({
 const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 function Index() {
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <Header />
-      <main>
-        <SolarScrollAnimation />
-        <Beneficios />
-        <SolarHowItWorks />
-        <Calculadora />
-        <Depoimentos />
-        <Contato />
-      </main>
-      <Footer />
-    </div>
-  );
+  return <div className="min-h-screen bg-background text-foreground"><Header /><main><SolarScrollAnimation /><Beneficios /><SolarHowItWorksPremium /><Calculadora /><Depoimentos /><Contato /></main><Footer /></div>;
 }
 
 function Header() {
-  return (
-    <header className="absolute inset-x-0 top-0 z-[60] border-b border-white/10 bg-black/10 text-white backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 md:px-8">
-        <a href="#" className="flex items-center gap-2.5"><span className="grid size-9 place-items-center rounded-xl border border-white/15 bg-white/10 text-white shadow-lg backdrop-blur-md"><Sun className="size-5" /></span><span className="font-display text-lg font-bold tracking-tight">Sol<span className="text-cyan-200">Viva</span></span></a>
-        <nav className="hidden items-center gap-7 text-sm font-medium text-white/70 md:flex"><a href="#beneficios" className="transition-colors hover:text-white">Benefícios</a><a href="#como-funciona" className="transition-colors hover:text-white">Como funciona</a><a href="#calculadora" className="transition-colors hover:text-white">Calculadora</a><a href="#depoimentos" className="transition-colors hover:text-white">Clientes</a></nav>
-        <a href="#contato" className="rounded-full border border-white/15 bg-white px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg transition hover:bg-cyan-100">Pedir orçamento</a>
-      </div>
-    </header>
-  );
+  return <header className="absolute inset-x-0 top-0 z-[60] border-b border-white/10 bg-black/10 text-white backdrop-blur-md"><div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 md:px-8"><a href="#" className="flex items-center gap-2.5"><span className="grid size-9 place-items-center rounded-xl border border-white/15 bg-white/10 text-white shadow-lg"><Sun className="size-5" /></span><span className="font-display text-lg font-bold tracking-tight">Sol<span className="text-cyan-200">Viva</span></span></a><nav className="hidden items-center gap-7 text-sm font-medium text-white/70 md:flex"><a href="#beneficios" className="transition-colors hover:text-white">Benefícios</a><a href="#como-funciona" className="transition-colors hover:text-white">Como funciona</a><a href="#calculadora" className="transition-colors hover:text-white">Calculadora</a><a href="#depoimentos" className="transition-colors hover:text-white">Clientes</a></nav><a href="#contato" className="rounded-full border border-white/15 bg-white px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg transition hover:bg-cyan-100">Pedir orçamento</a></div></header>;
 }
 
 function Beneficios() {
@@ -75,6 +54,4 @@ function Contato() {
   return <section id="contato" className="border-t bg-secondary/60"><div className="mx-auto grid max-w-6xl gap-10 px-5 py-20 md:grid-cols-2"><div><p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Fale com a SolViva</p><h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">Pronto para transformar sol em economia?</h2><p className="mt-4 max-w-md text-muted-foreground">Envie seus dados e nossa equipe entra em contato para entender seu consumo e montar uma proposta.</p></div><div className="rounded-3xl border bg-card p-7 shadow-sm"><div className="grid gap-4 sm:grid-cols-2"><input className="rounded-xl border bg-background px-4 py-3 text-sm outline-none ring-primary focus:ring-2" placeholder="Seu nome" /><input className="rounded-xl border bg-background px-4 py-3 text-sm outline-none ring-primary focus:ring-2" placeholder="WhatsApp" /></div><input className="mt-4 w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none ring-primary focus:ring-2" placeholder="E-mail" /><textarea className="mt-4 min-h-28 w-full rounded-xl border bg-background px-4 py-3 text-sm outline-none ring-primary focus:ring-2" placeholder="Conte um pouco sobre seu projeto" /><button className="mt-4 w-full rounded-xl bg-primary py-3.5 text-sm font-bold text-primary-foreground transition hover:opacity-90">Solicitar orçamento</button><div className="mt-5 grid gap-2 text-sm text-muted-foreground"><span className="inline-flex items-center gap-2"><Phone className="size-4" />(44) 99999-9999</span><span className="inline-flex items-center gap-2"><Mail className="size-4" />contato@solviva.com.br</span><span className="inline-flex items-center gap-2"><MapPin className="size-4" />Atendimento em todo o Brasil</span></div></div></div></section>;
 }
 
-function Footer() {
-  return <footer className="border-t bg-background"><div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between"><div className="flex items-center gap-2"><Sun className="size-4 text-primary" /><span>SolViva Energia Solar</span></div><p>© 2026 SolViva. Todos os direitos reservados.</p></div></footer>;
-}
+function Footer() { return <footer className="border-t bg-background"><div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between"><div className="flex items-center gap-2"><Sun className="size-4 text-primary" /><span>SolViva Energia Solar</span></div><p>© 2026 SolViva. Todos os direitos reservados.</p></div></footer>; }
