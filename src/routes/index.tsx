@@ -1,40 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import {
-  Sun,
-  Zap,
-  PiggyBank,
-  Leaf,
-  TrendingUp,
-  ClipboardCheck,
-  DraftingCompass,
-  Wrench,
-  LineChart,
-  Phone,
-  Mail,
-  MapPin,
-  CheckCircle2,
-  ArrowRight,
-} from "lucide-react";
+import { Sun, Zap, PiggyBank, Leaf, TrendingUp, ClipboardCheck, Phone, Mail, MapPin, CheckCircle2 } from "lucide-react";
 
-import instalacao from "@/assets/instalacao.jpg";
 import { SolarScrollAnimation } from "@/components/SolarScrollAnimation";
+import { SolarHowItWorks } from "@/components/SolarHowItWorks";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "SolViva Energia Solar — Economize até 95% na conta de luz" },
-      {
-        name: "description",
-        content:
-          "Projetos de energia solar fotovoltaica para residências e empresas. Simule sua economia, receba uma proposta em 24h e gere sua própria energia limpa.",
-      },
+      { name: "description", content: "Projetos de energia solar fotovoltaica para residências e empresas. Simule sua economia, receba uma proposta em 24h e gere sua própria energia limpa." },
       { property: "og:title", content: "SolViva Energia Solar" },
-      {
-        property: "og:description",
-        content:
-          "Transforme o sol do seu telhado em economia real. Painéis de alta eficiência, instalação profissional e retorno garantido.",
-      },
+      { property: "og:description", content: "Transforme o sol do seu telhado em economia real. Painéis de alta eficiência, instalação profissional e retorno garantido." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -42,23 +19,16 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const BRL = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-  maximumFractionDigits: 0,
-});
+const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <Header />
       <main>
-        {/* A experiência cinematográfica é o verdadeiro início da página. */}
         <SolarScrollAnimation />
-
-        {/* O restante do site só aparece depois que a jornada solar termina. */}
         <Beneficios />
-        <ComoFunciona />
+        <SolarHowItWorks />
         <Calculadora />
         <Depoimentos />
         <Contato />
@@ -73,12 +43,8 @@ function Header() {
     <header className="absolute inset-x-0 top-0 z-[60] border-b border-white/10 bg-black/10 text-white backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 md:px-8">
         <a href="#" className="flex items-center gap-2.5">
-          <span className="grid size-9 place-items-center rounded-xl border border-white/15 bg-white/10 text-white shadow-lg backdrop-blur-md">
-            <Sun className="size-5" />
-          </span>
-          <span className="font-display text-lg font-bold tracking-tight">
-            Sol<span className="text-cyan-200">Viva</span>
-          </span>
+          <span className="grid size-9 place-items-center rounded-xl border border-white/15 bg-white/10 text-white shadow-lg backdrop-blur-md"><Sun className="size-5" /></span>
+          <span className="font-display text-lg font-bold tracking-tight">Sol<span className="text-cyan-200">Viva</span></span>
         </a>
         <nav className="hidden items-center gap-7 text-sm font-medium text-white/70 md:flex">
           <a href="#beneficios" className="transition-colors hover:text-white">Benefícios</a>
@@ -86,12 +52,7 @@ function Header() {
           <a href="#calculadora" className="transition-colors hover:text-white">Calculadora</a>
           <a href="#depoimentos" className="transition-colors hover:text-white">Clientes</a>
         </nav>
-        <a
-          href="#contato"
-          className="rounded-full border border-white/15 bg-white px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg transition hover:bg-cyan-100"
-        >
-          Pedir orçamento
-        </a>
+        <a href="#contato" className="rounded-full border border-white/15 bg-white px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg transition hover:bg-cyan-100">Pedir orçamento</a>
       </div>
     </header>
   );
@@ -104,7 +65,6 @@ function Beneficios() {
     { icon: Leaf, titulo: "Energia limpa", texto: "Gere eletricidade a partir de uma fonte renovável e reduza sua dependência da rede elétrica." },
     { icon: ClipboardCheck, titulo: "Zero burocracia", texto: "Cuidamos do projeto, homologação junto à distribuidora e documentação do sistema." },
   ];
-
   return (
     <section id="beneficios" className="border-y bg-secondary/60">
       <div className="mx-auto max-w-6xl px-5 py-20">
@@ -124,39 +84,6 @@ function Beneficios() {
   );
 }
 
-function ComoFunciona() {
-  const passos = [
-    { icon: LineChart, titulo: "Análise da sua conta", texto: "Estudamos seu consumo e a irradiação solar da sua região para dimensionar o sistema ideal." },
-    { icon: DraftingCompass, titulo: "Projeto personalizado", texto: "Você recebe uma proposta com economia projetada, investimento e prazo de retorno." },
-    { icon: Wrench, titulo: "Instalação certificada", texto: "Equipe especializada instala o sistema com equipamentos de primeira linha." },
-    { icon: Sun, titulo: "Economia ativa", texto: "Homologamos junto à distribuidora e você acompanha a geração em tempo real." },
-  ];
-
-  return (
-    <section id="como-funciona" className="mx-auto max-w-6xl px-5 py-20">
-      <div className="grid items-start gap-12 md:grid-cols-[0.9fr_1.1fr]">
-        <div className="md:sticky md:top-24">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">Como funciona</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">Do orçamento à economia em 4 passos simples</h2>
-          <p className="mt-4 max-w-md text-muted-foreground">Processo transparente do início ao fim. Você acompanha cada etapa.</p>
-          <img src={instalacao} alt="Técnicos instalando painéis solares em um telhado residencial" width={1280} height={768} loading="lazy" className="mt-8 w-full rounded-2xl border object-cover shadow-lg" />
-        </div>
-        <ol className="space-y-4">
-          {passos.map((passo, i) => (
-            <li key={passo.titulo} className="flex gap-5 rounded-2xl border bg-card p-6 shadow-sm">
-              <div className="flex flex-col items-center gap-2">
-                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary font-display text-sm font-bold text-primary-foreground">{i + 1}</span>
-                <passo.icon className="size-5 text-primary" />
-              </div>
-              <div><h3 className="text-lg font-semibold">{passo.titulo}</h3><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{passo.texto}</p></div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
-  );
-}
-
 function Calculadora() {
   const [conta, setConta] = useState(600);
   const resultado = useMemo(() => {
@@ -166,7 +93,6 @@ function Calculadora() {
     const economia25 = economiaMes * 12 * 25;
     return { economiaMes, retornoAnos, economia25 };
   }, [conta]);
-
   return (
     <section id="calculadora" className="bg-primary text-primary-foreground">
       <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-20 md:grid-cols-2">
