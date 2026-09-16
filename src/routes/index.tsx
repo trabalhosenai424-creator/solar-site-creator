@@ -19,6 +19,7 @@ import {
 
 import heroSolar from "@/assets/hero-solar.jpg";
 import instalacao from "@/assets/instalacao.jpg";
+import { SolarScrollAnimation } from "@/components/SolarScrollAnimation";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -54,6 +55,7 @@ function Index() {
       <Header />
       <main>
         <Hero />
+        <SolarScrollAnimation />
         <Beneficios />
         <ComoFunciona />
         <Calculadora />
