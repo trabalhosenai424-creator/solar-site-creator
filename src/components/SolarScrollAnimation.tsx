@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 type SolarScrollAnimationProps = { className?: string };
 
-const FIRST_SEQUENCE_COUNT = 40;
-const SECOND_SEQUENCE_COUNT = 40;
-const FRAME_COUNT = FIRST_SEQUENCE_COUNT + SECOND_SEQUENCE_COUNT;
+const FRAME_COUNT = 80;
 const FRAME_PATH = "/frame_";
 
 const STORY = [
@@ -15,24 +13,6 @@ const STORY = [
   { start: 0.68, end: 0.84, eyebrow: "05 · Uso", title: "A energia chega onde importa.", body: "A eletricidade gerada passa a alimentar a casa e seus equipamentos." },
   { start: 0.84, end: 1, eyebrow: "06 · Resultado", title: "Sua energia. Seu controle.", body: "Acompanhe geração, consumo e economia com clareza." },
 ];
-
-function getFrameNumber(progress: number) {
-  const p = Math.max(0, Math.min(1, progress));
-  const loopStart = 0.5;
-  const loopEnd = 0.72;
-
-  if (p <= loopStart) {
-    return Math.min(FIRST_SEQUENCE_COUNT, Math.max(1, Math.floor((p / loopStart) * FIRST_SEQUENCE_COUNT) + 1));
-  }
-
-  if (p <= loopEnd) {
-    const reverseProgress = (p - loopStart) / (loopEnd - loopStart);
-    return Math.max(1, Math.min(FIRST_SEQUENCE_COUNT, Math.ceil(FIRST_SEQUENCE_COUNT - reverseProgress * (FIRST_SEQUENCE_COUNT - 1))));
-  }
-
-  const secondProgress = (p - loopEnd) / (1 - loopEnd);
-  return FIRST_SEQUENCE_COUNT + Math.min(SECOND_SEQUENCE_COUNT - 1, Math.floor(secondProgress * SECOND_SEQUENCE_COUNT)) + 1;
-}
 
 export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -56,9 +36,7 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
         if (!cancelled && loaded + failed === FRAME_COUNT) {
           imagesRef.current = images;
           setReady(loaded === FRAME_COUNT);
-          if (loaded !== FRAME_COUNT) {
-            console.warn(`Animação solar: ${loaded}/${FRAME_COUNT} frames carregados. ${failed} frame(s) ausente(s).`);
-          }
+          if (loaded !== FRAME_COUNT) console.warn(`Animação solar: ${loaded}/${FRAME_COUNT} frames carregados. ${failed} ausente(s).`);
         }
       };
       img.onerror = () => {
@@ -66,7 +44,7 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
         if (!cancelled && loaded + failed === FRAME_COUNT) {
           imagesRef.current = images;
           setReady(loaded === FRAME_COUNT);
-          console.warn(`Animação solar: ${loaded}/${FRAME_COUNT} frames carregados. ${failed} frame(s) ausente(s).`);
+          console.warn(`Animação solar: ${loaded}/${FRAME_COUNT} frames carregados. ${failed} ausente(s).`);
         }
       };
       images[i - 1] = img;
@@ -84,18 +62,42 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
     if (!ctx) return;
 
     let raf = 0;
-    let lastProgress = -1;
+    let targetProgress = 0;
+    let smoothProgress = 0;
+    let lastRenderedFrame = -1;
+    let lastReportedProgress = -1;
 
-    const draw = () => {
+    const render = () => {
       const bounds = section.getBoundingClientRect();
       const distance = Math.max(1, bounds.height - window.innerHeight);
-      const p = Math.max(0, Math.min(1, -bounds.top / distance));
+      targetProgress = Math.max(0, Math.min(1, -bounds.top / distance));
+
+      // Suaviza a leitura do scroll para evitar saltos de frames quando a pessoa
+      // usa a roda do mouse/trackpad rapidamente.
+      smoothProgress += (targetProgress - smoothProgress) * 0.075;
+      if (Math.abs(targetProgress - smoothProgress) < 0.0005) smoothProgress = targetProgress;
+
       const rect = canvas.getBoundingClientRect();
       const images = imagesRef.current;
-      const frameNumber = getFrameNumber(p);
-      const image = images[frameNumber - 1];
+      const firstHalf = smoothProgress <= 0.5;
+      const localProgress = firstHalf ? smoothProgress * 2 : (smoothProgress - 0.5) * 2;
 
-      if (image?.naturalWidth && rect.width && rect.height) {
+      // 0% → 50%: 01 → 40
+      // 50% → 75%: 40 → 01 (retorno)
+      // 75% → 100%: 41 → 80
+      let frameIndex: number;
+      if (smoothProgress <= 0.5) {
+        frameIndex = Math.min(39, Math.floor(localProgress * 40));
+      } else if (smoothProgress <= 0.75) {
+        const reverseProgress = (smoothProgress - 0.5) / 0.25;
+        frameIndex = Math.max(0, 39 - Math.floor(reverseProgress * 40));
+      } else {
+        const secondProgress = (smoothProgress - 0.75) / 0.25;
+        frameIndex = Math.min(79, 40 + Math.floor(secondProgress * 40));
+      }
+
+      const image = images[frameIndex];
+      if (image?.naturalWidth && rect.width && rect.height && frameIndex !== lastRenderedFrame) {
         const scale = Math.max(rect.width / image.naturalWidth, rect.height / image.naturalHeight);
         const w = image.naturalWidth * scale;
         const h = image.naturalHeight * scale;
@@ -103,11 +105,16 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
         ctx.fillStyle = "#03070b";
         ctx.fillRect(0, 0, rect.width, rect.height);
         ctx.drawImage(image, (rect.width - w) / 2, (rect.height - h) / 2, w, h);
+        lastRenderedFrame = frameIndex;
       }
 
-      if (Math.abs(lastProgress - p) > 0.008) {
-        lastProgress = p;
-        setProgress(p);
+      if (Math.abs(lastReportedProgress - smoothProgress) > 0.004) {
+        lastReportedProgress = smoothProgress;
+        setProgress(smoothProgress);
+      }
+
+      if (Math.abs(targetProgress - smoothProgress) > 0.0005) {
+        raf = requestAnimationFrame(render);
       }
     };
 
@@ -117,12 +124,14 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
       canvas.width = Math.max(1, Math.round(rect.width * dpr));
       canvas.height = Math.max(1, Math.round(rect.height * dpr));
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      draw();
+      lastRenderedFrame = -1;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(render);
     };
 
     const onScroll = () => {
       cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(draw);
+      raf = requestAnimationFrame(render);
     };
 
     resize();
@@ -141,7 +150,7 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
   const savings = Math.round(Math.min(847, Math.max(0, ((progress - 0.68) / 0.32) * 847)));
 
   return (
-    <section ref={sectionRef} className={`relative h-[520vh] w-full ${className}`} aria-label="Jornada cinematográfica da energia solar">
+    <section ref={sectionRef} className={`relative h-[700vh] w-full ${className}`} aria-label="Jornada cinematográfica da energia solar">
       <div className="sticky top-0 h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#03070b]">
         <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" aria-label="Animação da jornada da energia solar" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.28)_100%)]" />
