@@ -75,20 +75,20 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
       const scrollProgress = Math.max(0, Math.min(1, (window.scrollY - sectionTop) / distance));
       targetProgress = scrollProgress;
 
-      // Smoother than the old 0.045 value, so the animation stays fluid
-      // without visibly falling behind the user's scroll.
-      smoothProgress += (targetProgress - smoothProgress) * 0.085;
-      if (Math.abs(targetProgress - smoothProgress) < 0.00025) smoothProgress = targetProgress;
+      // Keep the same response speed in all three movements.
+      // A stronger interpolation avoids the 41→80 section falling behind the scroll.
+      smoothProgress += (targetProgress - smoothProgress) * 0.12;
+      if (Math.abs(targetProgress - smoothProgress) < 0.00035) smoothProgress = targetProgress;
 
       let frameIndex: number;
-      if (smoothProgress <= 0.1875) {
-        frameIndex = Math.min(39, Math.floor((smoothProgress / 0.1875) * 40));
-      } else if (smoothProgress <= 0.375) {
-        frameIndex = Math.max(0, 39 - Math.floor(((smoothProgress - 0.1875) / 0.1875) * 40));
+      // Equal scroll distance for all three parts:
+      // 01→40 | 40→01 | 41→80
+      if (smoothProgress <= 0.333333) {
+        frameIndex = Math.min(39, Math.floor((smoothProgress / 0.333333) * 40));
+      } else if (smoothProgress <= 0.666666) {
+        frameIndex = Math.max(0, 39 - Math.floor(((smoothProgress - 0.333333) / 0.333333) * 40));
       } else {
-        // The 41→80 continuation keeps the larger 62.5% scroll area,
-        // but responds faster internally so it does not look like lag.
-        frameIndex = Math.min(79, 40 + Math.floor(((smoothProgress - 0.375) / 0.625) * 40));
+        frameIndex = Math.min(79, 40 + Math.floor(((smoothProgress - 0.666666) / 0.333334) * 40));
       }
 
       const image = imagesRef.current[frameIndex];
@@ -107,7 +107,7 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
         setProgress(smoothProgress);
       }
 
-      if (Math.abs(targetProgress - smoothProgress) > 0.00025) {
+      if (Math.abs(targetProgress - smoothProgress) > 0.00035) {
         raf = requestAnimationFrame(render);
       } else {
         raf = 0;
