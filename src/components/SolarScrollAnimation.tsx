@@ -72,28 +72,29 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
       const distance = Math.max(1, bounds.height - window.innerHeight);
       targetProgress = Math.max(0, Math.min(1, -bounds.top / distance));
 
-      // Movimento cinematográfico: o frame acompanha o scroll gradualmente,
-      // evitando que a roda do mouse faça a câmera "cortar" entre imagens.
+      // O movimento continua suave, mas os três trechos têm exatamente a mesma
+      // quantidade de scroll: ida, volta e continuação.
       smoothProgress += (targetProgress - smoothProgress) * 0.045;
       if (Math.abs(targetProgress - smoothProgress) < 0.00035) smoothProgress = targetProgress;
 
       const rect = canvas.getBoundingClientRect();
       const images = imagesRef.current;
 
-      // Distribuição intencional do scroll:
-      // 30% = 01 → 40
-      // 40% = 40 → 01, com bastante espaço para cada frame do retorno
-      // 30% = 41 → 80
+      // Cada trecho ocupa exatamente 1/3 da jornada.
+      // 0% → 33,33%: 01 → 40
+      // 33,33% → 66,67%: 40 → 01
+      // 66,67% → 100%: 41 → 80
+      // Assim, cada um dos 40 frames tem o mesmo espaço de scroll nos três trechos.
       let frameIndex: number;
 
-      if (smoothProgress <= 0.30) {
-        const forwardProgress = smoothProgress / 0.30;
+      if (smoothProgress <= 1 / 3) {
+        const forwardProgress = smoothProgress * 3;
         frameIndex = Math.min(39, Math.floor(forwardProgress * 40));
-      } else if (smoothProgress <= 0.70) {
-        const reverseProgress = (smoothProgress - 0.30) / 0.40;
+      } else if (smoothProgress <= 2 / 3) {
+        const reverseProgress = (smoothProgress - 1 / 3) * 3;
         frameIndex = Math.max(0, 39 - Math.floor(reverseProgress * 40));
       } else {
-        const secondProgress = (smoothProgress - 0.70) / 0.30;
+        const secondProgress = (smoothProgress - 2 / 3) * 3;
         frameIndex = Math.min(79, 40 + Math.floor(secondProgress * 40));
       }
 
@@ -151,7 +152,7 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
   const savings = Math.round(Math.min(847, Math.max(0, ((progress - 0.68) / 0.32) * 847)));
 
   return (
-    <section ref={sectionRef} className={`relative h-[700vh] w-full ${className}`} aria-label="Jornada cinematográfica da energia solar">
+    <section ref={sectionRef} className={`relative h-[900vh] w-full ${className}`} aria-label="Jornada cinematográfica da energia solar">
       <div className="sticky top-0 h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#03070b]">
         <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" aria-label="Animação da jornada da energia solar" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.28)_100%)]" />
