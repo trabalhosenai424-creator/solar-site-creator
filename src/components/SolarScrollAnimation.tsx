@@ -72,27 +72,28 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
       const distance = Math.max(1, bounds.height - window.innerHeight);
       targetProgress = Math.max(0, Math.min(1, -bounds.top / distance));
 
-      // Suaviza a leitura do scroll para evitar saltos de frames quando a pessoa
-      // usa a roda do mouse/trackpad rapidamente.
-      smoothProgress += (targetProgress - smoothProgress) * 0.075;
-      if (Math.abs(targetProgress - smoothProgress) < 0.0005) smoothProgress = targetProgress;
+      // Movimento cinematográfico: o frame acompanha o scroll gradualmente,
+      // evitando que a roda do mouse faça a câmera "cortar" entre imagens.
+      smoothProgress += (targetProgress - smoothProgress) * 0.045;
+      if (Math.abs(targetProgress - smoothProgress) < 0.00035) smoothProgress = targetProgress;
 
       const rect = canvas.getBoundingClientRect();
       const images = imagesRef.current;
-      const firstHalf = smoothProgress <= 0.5;
-      const localProgress = firstHalf ? smoothProgress * 2 : (smoothProgress - 0.5) * 2;
 
-      // 0% → 50%: 01 → 40
-      // 50% → 75%: 40 → 01 (retorno)
-      // 75% → 100%: 41 → 80
+      // Distribuição intencional do scroll:
+      // 30% = 01 → 40
+      // 40% = 40 → 01, com bastante espaço para cada frame do retorno
+      // 30% = 41 → 80
       let frameIndex: number;
-      if (smoothProgress <= 0.5) {
-        frameIndex = Math.min(39, Math.floor(localProgress * 40));
-      } else if (smoothProgress <= 0.75) {
-        const reverseProgress = (smoothProgress - 0.5) / 0.25;
+
+      if (smoothProgress <= 0.30) {
+        const forwardProgress = smoothProgress / 0.30;
+        frameIndex = Math.min(39, Math.floor(forwardProgress * 40));
+      } else if (smoothProgress <= 0.70) {
+        const reverseProgress = (smoothProgress - 0.30) / 0.40;
         frameIndex = Math.max(0, 39 - Math.floor(reverseProgress * 40));
       } else {
-        const secondProgress = (smoothProgress - 0.75) / 0.25;
+        const secondProgress = (smoothProgress - 0.70) / 0.30;
         frameIndex = Math.min(79, 40 + Math.floor(secondProgress * 40));
       }
 
@@ -113,7 +114,7 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
         setProgress(smoothProgress);
       }
 
-      if (Math.abs(targetProgress - smoothProgress) > 0.0005) {
+      if (Math.abs(targetProgress - smoothProgress) > 0.00035) {
         raf = requestAnimationFrame(render);
       }
     };
