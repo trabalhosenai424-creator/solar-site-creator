@@ -78,25 +78,24 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
       const rect = canvas.getBoundingClientRect();
       const images = imagesRef.current;
 
-      // A ida e a volta mantêm exatamente o espaço de scroll anterior.
-      // A continuação ganha muito mais espaço para ficar realmente lenta:
-      // 01 → 40  = 225vh
-      // 40 → 01  = 225vh
-      // 41 → 80  = 750vh
-      // Assim os frames 41 → 80 têm 1,67x mais espaço que antes.
-      const FIRST_END = 0.1875;   // 225 / 1200
-      const SECOND_END = 0.375;   // 450 / 1200
-
+      // Mantém a ida e a volta com a mesma velocidade que já estava boa.
+      // A continuação continua propositalmente mais longa/lenta.
+      // 0% → 18.75%: 01 → 40
+      // 18.75% → 37.5%: 40 → 01
+      // 37.5% → 100%: 41 → 80
+      // Como a seção agora é maior, os primeiros dois trechos preservam
+      // aproximadamente o mesmo espaço físico de scroll, enquanto o trecho
+      // final ganha bastante espaço para uma leitura mais cinematográfica.
       let frameIndex: number;
 
-      if (smoothProgress <= FIRST_END) {
-        const forwardProgress = smoothProgress / FIRST_END;
+      if (smoothProgress <= 0.1875) {
+        const forwardProgress = smoothProgress / 0.1875;
         frameIndex = Math.min(39, Math.floor(forwardProgress * 40));
-      } else if (smoothProgress <= SECOND_END) {
-        const reverseProgress = (smoothProgress - FIRST_END) / (SECOND_END - FIRST_END);
+      } else if (smoothProgress <= 0.375) {
+        const reverseProgress = (smoothProgress - 0.1875) / 0.1875;
         frameIndex = Math.max(0, 39 - Math.floor(reverseProgress * 40));
       } else {
-        const secondProgress = (smoothProgress - SECOND_END) / (1 - SECOND_END);
+        const secondProgress = (smoothProgress - 0.375) / 0.625;
         frameIndex = Math.min(79, 40 + Math.floor(secondProgress * 40));
       }
 
