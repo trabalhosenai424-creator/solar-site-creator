@@ -72,29 +72,31 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
       const distance = Math.max(1, bounds.height - window.innerHeight);
       targetProgress = Math.max(0, Math.min(1, -bounds.top / distance));
 
-      // O movimento continua suave, mas os três trechos têm exatamente a mesma
-      // quantidade de scroll: ida, volta e continuação.
+      // Mantém o mesmo ritmo cinematográfico de suavização durante toda a jornada.
       smoothProgress += (targetProgress - smoothProgress) * 0.045;
       if (Math.abs(targetProgress - smoothProgress) < 0.00035) smoothProgress = targetProgress;
 
       const rect = canvas.getBoundingClientRect();
       const images = imagesRef.current;
 
-      // Cada trecho ocupa exatamente 1/3 da jornada.
-      // 0% → 33,33%: 01 → 40
-      // 33,33% → 66,67%: 40 → 01
-      // 66,67% → 100%: 41 → 80
-      // Assim, cada um dos 40 frames tem o mesmo espaço de scroll nos três trechos.
+      // O primeiro e o segundo movimento já estão na velocidade desejada.
+      // A continuação recebe mais espaço de scroll para que os 40 frames
+      // 41 → 80 sejam visualizados com a mesma sensação de câmera lenta.
+      // 0% → 25%: 01 → 40
+      // 25% → 50%: 40 → 01
+      // 50% → 100%: 41 → 80
       let frameIndex: number;
 
-      if (smoothProgress <= 1 / 3) {
-        const forwardProgress = smoothProgress * 3;
+      if (smoothProgress <= 0.25) {
+        const forwardProgress = smoothProgress / 0.25;
         frameIndex = Math.min(39, Math.floor(forwardProgress * 40));
-      } else if (smoothProgress <= 2 / 3) {
-        const reverseProgress = (smoothProgress - 1 / 3) * 3;
+      } else if (smoothProgress <= 0.50) {
+        const reverseProgress = (smoothProgress - 0.25) / 0.25;
         frameIndex = Math.max(0, 39 - Math.floor(reverseProgress * 40));
       } else {
-        const secondProgress = (smoothProgress - 2 / 3) * 3;
+        // A segunda sequência ocupa metade de toda a jornada,
+        // deixando cada frame do 41 → 80 duas vezes mais tempo no scroll.
+        const secondProgress = (smoothProgress - 0.50) / 0.50;
         frameIndex = Math.min(79, 40 + Math.floor(secondProgress * 40));
       }
 
