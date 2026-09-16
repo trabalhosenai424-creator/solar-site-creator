@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 
 type SolarScrollAnimationProps = { className?: string };
 
-const FRAME_COUNT = 80;
+const FIRST_SEQUENCE_COUNT = 40;
+const SECOND_SEQUENCE_COUNT = 40;
+const FRAME_COUNT = FIRST_SEQUENCE_COUNT + SECOND_SEQUENCE_COUNT;
 const FRAME_PATH = "/frame_";
 
 const STORY = [
@@ -13,6 +15,24 @@ const STORY = [
   { start: 0.68, end: 0.84, eyebrow: "05 · Uso", title: "A energia chega onde importa.", body: "A eletricidade gerada passa a alimentar a casa e seus equipamentos." },
   { start: 0.84, end: 1, eyebrow: "06 · Resultado", title: "Sua energia. Seu controle.", body: "Acompanhe geração, consumo e economia com clareza." },
 ];
+
+function getFrameNumber(progress: number) {
+  const p = Math.max(0, Math.min(1, progress));
+  const loopStart = 0.5;
+  const loopEnd = 0.72;
+
+  if (p <= loopStart) {
+    return Math.min(FIRST_SEQUENCE_COUNT, Math.max(1, Math.floor((p / loopStart) * FIRST_SEQUENCE_COUNT) + 1));
+  }
+
+  if (p <= loopEnd) {
+    const reverseProgress = (p - loopStart) / (loopEnd - loopStart);
+    return Math.max(1, Math.min(FIRST_SEQUENCE_COUNT, Math.ceil(FIRST_SEQUENCE_COUNT - reverseProgress * (FIRST_SEQUENCE_COUNT - 1))));
+  }
+
+  const secondProgress = (p - loopEnd) / (1 - loopEnd);
+  return FIRST_SEQUENCE_COUNT + Math.min(SECOND_SEQUENCE_COUNT - 1, Math.floor(secondProgress * SECOND_SEQUENCE_COUNT)) + 1;
+}
 
 export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationProps) {
   const sectionRef = useRef<HTMLElement>(null);
@@ -72,8 +92,8 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
       const p = Math.max(0, Math.min(1, -bounds.top / distance));
       const rect = canvas.getBoundingClientRect();
       const images = imagesRef.current;
-      const index = Math.min(FRAME_COUNT - 1, Math.floor(p * FRAME_COUNT));
-      const image = images[index];
+      const frameNumber = getFrameNumber(p);
+      const image = images[frameNumber - 1];
 
       if (image?.naturalWidth && rect.width && rect.height) {
         const scale = Math.max(rect.width / image.naturalWidth, rect.height / image.naturalHeight);
