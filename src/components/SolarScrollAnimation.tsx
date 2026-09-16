@@ -72,31 +72,31 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
       const distance = Math.max(1, bounds.height - window.innerHeight);
       targetProgress = Math.max(0, Math.min(1, -bounds.top / distance));
 
-      // Mantém o mesmo ritmo cinematográfico de suavização durante toda a jornada.
       smoothProgress += (targetProgress - smoothProgress) * 0.045;
       if (Math.abs(targetProgress - smoothProgress) < 0.00035) smoothProgress = targetProgress;
 
       const rect = canvas.getBoundingClientRect();
       const images = imagesRef.current;
 
-      // O primeiro e o segundo movimento já estão na velocidade desejada.
-      // A continuação recebe mais espaço de scroll para que os 40 frames
-      // 41 → 80 sejam visualizados com a mesma sensação de câmera lenta.
-      // 0% → 25%: 01 → 40
-      // 25% → 50%: 40 → 01
-      // 50% → 100%: 41 → 80
+      // A ida e a volta mantêm exatamente o espaço de scroll anterior.
+      // A continuação ganha muito mais espaço para ficar realmente lenta:
+      // 01 → 40  = 225vh
+      // 40 → 01  = 225vh
+      // 41 → 80  = 750vh
+      // Assim os frames 41 → 80 têm 1,67x mais espaço que antes.
+      const FIRST_END = 0.1875;   // 225 / 1200
+      const SECOND_END = 0.375;   // 450 / 1200
+
       let frameIndex: number;
 
-      if (smoothProgress <= 0.25) {
-        const forwardProgress = smoothProgress / 0.25;
+      if (smoothProgress <= FIRST_END) {
+        const forwardProgress = smoothProgress / FIRST_END;
         frameIndex = Math.min(39, Math.floor(forwardProgress * 40));
-      } else if (smoothProgress <= 0.50) {
-        const reverseProgress = (smoothProgress - 0.25) / 0.25;
+      } else if (smoothProgress <= SECOND_END) {
+        const reverseProgress = (smoothProgress - FIRST_END) / (SECOND_END - FIRST_END);
         frameIndex = Math.max(0, 39 - Math.floor(reverseProgress * 40));
       } else {
-        // A segunda sequência ocupa metade de toda a jornada,
-        // deixando cada frame do 41 → 80 duas vezes mais tempo no scroll.
-        const secondProgress = (smoothProgress - 0.50) / 0.50;
+        const secondProgress = (smoothProgress - SECOND_END) / (1 - SECOND_END);
         frameIndex = Math.min(79, 40 + Math.floor(secondProgress * 40));
       }
 
@@ -154,7 +154,7 @@ export function SolarScrollAnimation({ className = "" }: SolarScrollAnimationPro
   const savings = Math.round(Math.min(847, Math.max(0, ((progress - 0.68) / 0.32) * 847)));
 
   return (
-    <section ref={sectionRef} className={`relative h-[900vh] w-full ${className}`} aria-label="Jornada cinematográfica da energia solar">
+    <section ref={sectionRef} className={`relative h-[1200vh] w-full ${className}`} aria-label="Jornada cinematográfica da energia solar">
       <div className="sticky top-0 h-[100svh] min-h-[560px] w-full overflow-hidden bg-[#03070b]">
         <canvas ref={canvasRef} className="absolute inset-0 block h-full w-full" aria-label="Animação da jornada da energia solar" />
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_35%,rgba(0,0,0,0.28)_100%)]" />
